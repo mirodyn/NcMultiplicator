@@ -8,7 +8,7 @@ Options opt = Parser.Default.ParseArguments<Options>(args).Value;
 
 if (opt.File == String.Empty)
 {
-    Console.WriteLine("Zadej osu (X/Y/Z):");
+    Console.WriteLine("Zadej osu (X/Y/Z/C):");
     string? axis = Console.ReadLine();
     if (axis != null) opt.Axis = axis;
 }
@@ -56,7 +56,7 @@ if (!double.TryParse(opt.Coefficient, CultureInfo.InvariantCulture,out coeff))
     return;
 }
 
-if(opt.Axis.Length != 1 || !(opt.Axis.ToLower() == "x" || opt.Axis.ToLower() == "y" || opt.Axis.ToLower() == "z"))
+if(opt.Axis.Length != 1 || !(opt.Axis.ToLower() == "x" || opt.Axis.ToLower() == "y" || opt.Axis.ToLower() == "z" || opt.Axis.ToLower() == "c"))
 {
     Console.ForegroundColor = ConsoleColor.Red;
     Console.WriteLine("Naplatné označení osy!");
