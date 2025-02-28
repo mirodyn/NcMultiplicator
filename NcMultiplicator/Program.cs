@@ -2,8 +2,6 @@
 using NcMultiplicator;
 using System.Globalization;
 
-Console.WriteLine("Hello, World!");
-
 Options opt = Parser.Default.ParseArguments<Options>(args).Value;
 
 if (opt.File == String.Empty)
@@ -43,7 +41,7 @@ if (!File.Exists(opt.File))
     Console.WriteLine("Zdrojový soubor nelze nalézt!");
     Console.ForegroundColor = ConsoleColor.White;
     Console.ReadLine();
-    return;
+    return Done(-1);
 }
 
 double coeff = 0;
@@ -53,7 +51,7 @@ if (!double.TryParse(opt.Coefficient, CultureInfo.InvariantCulture,out coeff))
     Console.WriteLine("Koeficient není číslo!");
     Console.ForegroundColor = ConsoleColor.White;
     Console.ReadLine();
-    return;
+    return Done(-1);
 }
 
 if(opt.Axis.Length != 1 || !(opt.Axis.ToLower() == "x" || opt.Axis.ToLower() == "y" || opt.Axis.ToLower() == "z" || opt.Axis.ToLower() == "c"))
@@ -62,7 +60,7 @@ if(opt.Axis.Length != 1 || !(opt.Axis.ToLower() == "x" || opt.Axis.ToLower() == 
     Console.WriteLine("Naplatné označení osy!");
     Console.ForegroundColor = ConsoleColor.White;
     Console.ReadLine();
-    return;
+    return Done(-1);
 }
 
 string newfilename = Path.GetFileNameWithoutExtension(opt.File);
@@ -70,18 +68,30 @@ newfilename += "_result" + Path.GetExtension(opt.File);
 
 List<string> newLines = new List<string>(); 
 Console.WriteLine("Zpracovávám vstupní data...");
-
-foreach(string line in File.ReadAllLines(opt.File))
+int rowNum = 1;
+try
 {
-    newLines.Add(ProcessLine(line,coeff));
+    foreach (string line in File.ReadAllLines(opt.File))
+    {
+        newLines.Add(ProcessLine(line,coeff));
+        rowNum++;
+    }
+}
+catch (Exception ex)
+{
+    Console.ForegroundColor = ConsoleColor.Red;
+    Console.WriteLine($"Chyba na řádku [{rowNum}]:\n{ex.Message}");
+    Console.ForegroundColor = ConsoleColor.White;
+
+    return Done(-1);
 }
 
 Console.WriteLine("Zapisuji do výstupního souboru...");
 
 File.WriteAllLines(newfilename, newLines);
 
-Console.WriteLine("Hotovo. Pro ukončení aplikace stiskni ENTER.");
-Console.ReadLine();
+Console.WriteLine("Hotovo");
+return Done(0);
 
 string ProcessLine(string originalLine,double coeff)
 {
@@ -92,7 +102,7 @@ string ProcessLine(string originalLine,double coeff)
     {
         if (fragment.ToLower().StartsWith(opt.Axis.ToLower()))
         {
-            newLine += " " + ProcessFragment(fragment,coeff);
+            newLine += " " + ProcessFragment(fragment, coeff);
         }
         else
         {
@@ -111,4 +121,11 @@ string ProcessFragment(string fragment,double coeff)
     double newNumber = number * coeff;
 
     return leadingChar + newNumber.ToString("F3", CultureInfo.InvariantCulture);
+}
+
+int Done(int code)
+{
+    Console.WriteLine("Stiskni ENTER pro ukončení aplikace");
+    Console.ReadLine();
+    return code;
 }
